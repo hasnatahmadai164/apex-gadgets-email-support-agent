@@ -1,0 +1,21 @@
+services:
+  db:
+    image: postgres:16
+    container_name: apex-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: apex
+      POSTGRES_PASSWORD: apex
+      POSTGRES_DB: apex_gadgets
+    ports:
+      - "5432:5432"
+    volumes:
+      - apex_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U apex -d apex_gadgets"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  apex_pgdata:
