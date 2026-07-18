@@ -12,5 +12,16 @@ psycopg2-binary>=2.9
 langchain-core>=0.3
 langchain-openai>=0.2
 
+# Gmail integration
+google-api-python-client>=2.149
+google-auth>=2.35
+google-auth-oauthlib>=1.2
+google-auth-httplib2>=0.2
+
+# RAG knowledge base
+pypdf>=5.1
+langchain-text-splitters>=0.3
+pinecone>=5.4
+
 # Testing
 pytest>=8.3
