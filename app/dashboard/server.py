@@ -36,7 +36,7 @@ def require_admin(credentials: HTTPBasicCredentials = Depends(security)) -> str:
 
 @app.get("/")
 def dashboard_page(request: Request, _: str = Depends(require_admin)):
-    return templates.TemplateResponse("dashboard.html", {"request": request})
+    return templates.TemplateResponse(request, "dashboard.html", {})
 
 
 @app.get("/api/stats")
