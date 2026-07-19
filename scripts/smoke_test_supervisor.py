@@ -4,11 +4,20 @@ from app.agents.supervisor import process_email
 from app.core.schemas import EmailMessage
 from app.db.session import get_session
 
-SAMPLE_EMAIL = EmailMessage(
+FIRST_EMAIL = EmailMessage(
     sender="jane@example.com",
-    subject="Return policy question",
-    body="Hi, what is your return policy for laptops?",
+    subject="Product question",
+    body="Does the Apex Pro 14 support fast charging?",
     gmail_message_id="smoke-test-message-1",
+    thread_id="smoke-test-thread-1",
+    received_at=datetime.now(tz=timezone.utc),
+)
+
+FOLLOW_UP_EMAIL = EmailMessage(
+    sender="jane@example.com",
+    subject="Re: Product question",
+    body="What about the 16 inch version?",
+    gmail_message_id="smoke-test-message-2",
     thread_id="smoke-test-thread-1",
     received_at=datetime.now(tz=timezone.utc),
 )
@@ -17,9 +26,14 @@ SAMPLE_EMAIL = EmailMessage(
 def main():
     session = next(get_session())
     try:
-        result = process_email(SAMPLE_EMAIL, session)
-        print("category:", result.get("category"))
-        print("reply:", result.get("reply_text"))
+        first = process_email(FIRST_EMAIL, session)
+        print("Q1:", FIRST_EMAIL.body)
+        print("A1:", first.get("reply_text"))
+        print()
+
+        second = process_email(FOLLOW_UP_EMAIL, session)
+        print("Q2:", FOLLOW_UP_EMAIL.body)
+        print("A2:", second.get("reply_text"))
     finally:
         session.close()
 
