@@ -10,5 +10,6 @@ class GraphState(TypedDict, total=False):
     route: Literal["rag", "orders", "tickets"]
     pending_order: dict | None
     pending_ticket: dict | None
+    qa_history: list[dict]
     reply_text: str | None
     category: Literal["irrelevant", "needs_review", "handled"]

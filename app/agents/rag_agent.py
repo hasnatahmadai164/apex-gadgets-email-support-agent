@@ -11,6 +11,13 @@ from app.tools.pinecone_tools import retrieve_chunks
 
 MAX_RETRIES = 2
 
+CONTEXTUALIZE_SYSTEM_PROMPT = (
+    "You rewrite a customer's question into a standalone question that makes "
+    "sense without seeing the earlier conversation, using the conversation "
+    "history provided. If the question already stands on its own, or there is "
+    "no history, return it unchanged. Only rewrite it, do not answer it."
+)
+
 GRADE_SYSTEM_PROMPT = (
     "You judge whether retrieved knowledge base content is enough to answer a "
     "customer's question about Apex Gadgets products, orders, or policies. Mark "
@@ -43,6 +50,13 @@ class RagState(TypedDict):
     is_sufficient: bool
     retry_count: int
     answer: str
+    history: list[dict]
+
+
+class ContextualizeResult(BaseModel):
+    standalone_question: str = Field(
+        description="The question rewritten to stand alone, using conversation history"
+    )
 
 
 class GradeResult(BaseModel):
@@ -55,6 +69,29 @@ class RewriteResult(BaseModel):
     rewritten_query: str = Field(
         description="A rewritten search query more likely to retrieve relevant chunks"
     )
+
+
+def _format_history(history: list[dict]) -> str:
+    return "\n".join(f"Q: {turn['question']}\nA: {turn['answer']}" for turn in history)
+
+
+def contextualize_node(state: RagState) -> dict:
+    history = state.get("history") or []
+    if not history:
+        return {}
+
+    llm = build_chat_model(
+        get_settings().azure_openai_specialist_deployment
+    ).with_structured_output(ContextualizeResult)
+    result = llm.invoke(
+        [
+            SystemMessage(content=CONTEXTUALIZE_SYSTEM_PROMPT),
+            HumanMessage(
+                content=f"Conversation history:\n{_format_history(history)}\n\nNew question: {state['original_query']}"
+            ),
+        ]
+    )
+    return {"query": result.standalone_question, "original_query": result.standalone_question}
 
 
 def retrieve_node(state: RagState) -> dict:
@@ -93,10 +130,18 @@ def rewrite_node(state: RagState) -> dict:
 def answer_node(state: RagState) -> dict:
     llm = build_chat_model(get_settings().azure_openai_specialist_deployment)
     context = "\n\n".join(state["retrieved_chunks"]) or "No relevant information was found."
+    history = state.get("history") or []
+    history_text = _format_history(history) if history else "No earlier messages in this conversation."
     response = llm.invoke(
         [
             SystemMessage(content=ANSWER_SYSTEM_PROMPT),
-            HumanMessage(content=f"Question: {state['original_query']}\n\nKnowledge base content:\n{context}"),
+            HumanMessage(
+                content=(
+                    f"Earlier conversation:\n{history_text}\n\n"
+                    f"Question: {state['original_query']}\n\n"
+                    f"Knowledge base content:\n{context}"
+                )
+            ),
         ]
     )
     return {"answer": response.content}
@@ -111,12 +156,14 @@ def _should_retry(state: RagState) -> str:
 @lru_cache
 def build_rag_graph():
     graph = StateGraph(RagState)
+    graph.add_node("contextualize", contextualize_node)
     graph.add_node("retrieve", retrieve_node)
     graph.add_node("grade", grade_node)
     graph.add_node("rewrite", rewrite_node)
     graph.add_node("answer", answer_node)
 
-    graph.set_entry_point("retrieve")
+    graph.set_entry_point("contextualize")
+    graph.add_edge("contextualize", "retrieve")
     graph.add_edge("retrieve", "grade")
     graph.add_conditional_edges("grade", _should_retry, {"answer": "answer", "rewrite": "rewrite"})
     graph.add_edge("rewrite", "retrieve")
@@ -125,7 +172,7 @@ def build_rag_graph():
     return graph.compile()
 
 
-def answer_question(question: str) -> str:
+def answer_question(question: str, history: list[dict] | None = None) -> str:
     result = build_rag_graph().invoke(
         {
             "query": question,
@@ -134,6 +181,7 @@ def answer_question(question: str) -> str:
             "is_sufficient": False,
             "retry_count": 0,
             "answer": "",
+            "history": history or [],
         }
     )
     return result["answer"]
