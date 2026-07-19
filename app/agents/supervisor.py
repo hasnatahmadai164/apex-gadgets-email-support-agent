@@ -25,6 +25,8 @@ ROUTE_SYSTEM_PROMPT = (
     "support issue, or for checking an existing ticket's status."
 )
 
+MAX_QA_HISTORY_TURNS = 5
+
 
 class RouteResult(BaseModel):
     route: Literal["rag", "orders", "tickets"]
@@ -69,8 +71,12 @@ def route_specialist_node(state: GraphState) -> dict:
 
 
 def rag_node(state: GraphState) -> dict:
-    answer = answer_question(state["email"].body)
-    return {"reply_text": answer, "category": "handled"}
+    history = state.get("qa_history") or []
+    answer = answer_question(state["email"].body, history=history)
+    updated_history = (history + [{"question": state["email"].body, "answer": answer}])[
+        -MAX_QA_HISTORY_TURNS:
+    ]
+    return {"reply_text": answer, "category": "handled", "qa_history": updated_history}
 
 
 def orders_node(state: GraphState, config: dict) -> dict:
