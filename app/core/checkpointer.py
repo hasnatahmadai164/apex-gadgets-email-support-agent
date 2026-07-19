@@ -8,7 +8,11 @@ from app.core.config import get_settings
 
 
 def _to_psycopg_conn_string(sqlalchemy_url: str) -> str:
-    return sqlalchemy_url.replace("postgresql+psycopg2://", "postgresql://")
+    return (
+    sqlalchemy_url
+    .replace("postgresql+psycopg://", "postgresql://")
+    .replace("postgresql+psycopg2://", "postgresql://")
+)
 
 
 @lru_cache

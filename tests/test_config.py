@@ -11,8 +11,8 @@ def test_settings_reads_database_url_from_env():
 
 def test_settings_has_sensible_defaults_for_deployment_names():
     settings = get_settings()
-    assert settings.azure_openai_relevance_deployment == "gpt-4o-mini"
-    assert settings.azure_openai_sensitivity_deployment == "gpt-4o-mini"
+    assert settings.azure_openai_relevance_deployment == "gpt-5-mini"
+    assert settings.azure_openai_sensitivity_deployment == "gpt-5-mini"
     assert settings.azure_openai_specialist_deployment == "gpt-5-mini"
     assert settings.azure_openai_embedding_deployment == "text-embedding-3-small"
 

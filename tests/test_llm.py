@@ -9,6 +9,6 @@ def test_build_chat_model_returns_azure_chat_model(monkeypatch):
     monkeypatch.setenv("AZURE_OPENAI_API_KEY", "test-key")
     get_settings.cache_clear()
 
-    model = build_chat_model("gpt-4o-mini")
+    model = build_chat_model("gpt-5-mini")
 
     assert isinstance(model, AzureChatOpenAI)
