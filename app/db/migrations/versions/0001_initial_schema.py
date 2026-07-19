@@ -58,7 +58,6 @@ def upgrade() -> None:
     email_category = sa.Enum(
         "irrelevant", "needs_review", "handled", name="email_category"
     )
-    email_category.create(op.get_bind(), checkfirst=True)
 
     op.create_table(
         "email_events",
