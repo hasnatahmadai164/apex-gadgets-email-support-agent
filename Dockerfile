@@ -8,6 +8,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY --chown=appuser:appuser . .
+RUN chmod +x scripts/run_dashboard.sh
 
 USER appuser
 
