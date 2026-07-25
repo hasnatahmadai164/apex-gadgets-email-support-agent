@@ -8,10 +8,9 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY --chown=appuser:appuser . .
-RUN chmod +x scripts/run_dashboard.sh
 
 USER appuser
 
 EXPOSE 8000
 
-CMD ["python", "-m", "app.poller"]
+CMD ["sh", "-c", "if [ \"$SERVICE_MODE\" = \"dashboard\" ]; then exec uvicorn app.dashboard.server:app --host 0.0.0.0 --port 8000; else exec python -m app.poller; fi"]
