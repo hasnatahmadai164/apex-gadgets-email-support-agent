@@ -43,10 +43,10 @@ class Settings(BaseSettings):
     azure_openai_api_version: str = Field("2024-10-21", alias="AZURE_OPENAI_API_VERSION")
 
     azure_openai_relevance_deployment: str = Field(
-        "gpt-4o-mini", alias="AZURE_OPENAI_RELEVANCE_DEPLOYMENT"
+        "gpt-5-mini", alias="AZURE_OPENAI_RELEVANCE_DEPLOYMENT"
     )
     azure_openai_sensitivity_deployment: str = Field(
-        "gpt-4o-mini", alias="AZURE_OPENAI_SENSITIVITY_DEPLOYMENT"
+        "gpt-5-mini", alias="AZURE_OPENAI_SENSITIVITY_DEPLOYMENT"
     )
     azure_openai_specialist_deployment: str = Field(
         "gpt-5-mini", alias="AZURE_OPENAI_SPECIALIST_DEPLOYMENT"
