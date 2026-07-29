@@ -83,7 +83,13 @@ class EmailEvent(Base):
     thread_id: Mapped[str] = mapped_column(String(128), nullable=False, index=True)
     received_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     category: Mapped[EmailCategory] = mapped_column(
-        Enum(EmailCategory, name="email_category", native_enum=True), nullable=False
+        Enum(
+            EmailCategory,
+            name="email_category",
+            native_enum=True,
+            values_callable=lambda enum_cls: [member.value for member in enum_cls],
+        ),
+        nullable=False,
     )
     replied: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     replied_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
