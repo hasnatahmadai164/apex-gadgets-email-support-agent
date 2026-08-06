@@ -2,7 +2,8 @@ from functools import lru_cache
 from typing import Literal
 
 from langchain_core.messages import HumanMessage, SystemMessage
-from langgraph.graph import END, StateGraph, RunnableConfig
+from langgraph.graph import END, StateGraph
+from langchain_core.runnables import RunnableConfig
 from pydantic import BaseModel
 
 from app.agents.orders_agent import handle_order_request
