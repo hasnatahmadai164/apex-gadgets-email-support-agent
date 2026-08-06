@@ -79,7 +79,7 @@ def rag_node(state: GraphState) -> dict:
     return {"reply_text": answer, "category": "handled", "qa_history": updated_history}
 
 
-def orders_node(state: GraphState, config: dict) -> dict:
+def orders_node(state: GraphState, config: RunnableConfig) -> dict:
     session = config["configurable"]["session"]
     result = handle_order_request(state["email"], state.get("pending_order"), session)
     return {
@@ -89,7 +89,7 @@ def orders_node(state: GraphState, config: dict) -> dict:
     }
 
 
-def tickets_node(state: GraphState, config: dict) -> dict:
+def tickets_node(state: GraphState, config: RunnableConfig) -> dict:
     session = config["configurable"]["session"]
     result = handle_ticket_request(state["email"], state.get("pending_ticket"), session)
     return {
